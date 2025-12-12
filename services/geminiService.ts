@@ -51,12 +51,10 @@ export const generateContent = async (
   mode: AppMode,
   inputText: string
 ): Promise<string[]> => {
-  const apiKey = process.env.API_KEY;
-  if (!apiKey) {
-    throw new Error("API Key is missing. Please set the API_KEY environment variable.");
-  }
-
-  const ai = new GoogleGenAI({ apiKey });
+  // Use process.env.API_KEY directly as per SDK requirements.
+  // Ensure your build tool (like Vite) is configured to expose 'API_KEY' if running in a browser environment,
+  // or simply name your environment variable 'API_KEY' in your deployment settings.
+  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
   let prompt = "";
   if (mode === AppMode.COMMENT_GENERATOR) {
@@ -102,6 +100,6 @@ export const generateContent = async (
     return parsed.results || [];
   } catch (error) {
     console.error("Gemini API Error:", error);
-    throw new Error("Failed to generate content. Please try again.");
+    throw new Error("Failed to generate content. Please check your API key and try again.");
   }
 };
