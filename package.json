@@ -12,7 +12,9 @@
     "react": "18.3.1",
     "react-dom": "18.3.1",
     "@google/genai": "latest",
-    "lucide-react": "0.344.0"
+    "lucide-react": "0.344.0",
+    "@vitejs/plugin-react": "^5.1.2",
+    "vite": "^7.2.7"
   },
   "devDependencies": {
     "@types/node": "^22.14.0",
