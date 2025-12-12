@@ -1,5 +1,5 @@
 import { GoogleGenAI, Type, Schema } from "@google/genai";
-import { AppMode } from "../types";
+import { AppMode, GeneratedItem } from "../types";
 
 const getSystemInstruction = () => {
   return `
@@ -21,6 +21,7 @@ MANDATORY RULES - READ CAREFULLY:
 3. **LENGTH CONSTRAINTS:**
    - **Comments:** 1-2 lines MAXIMUM. Short, polite, and reactive.
    - **Posts:** 2-3 sentences MAXIMUM. Simple discussion starters.
+   - **Titles:** 1 line MAXIMUM. Short and punchy.
 
 4. **CONTENT & REGION:**
    - FOCUS on **general human opinion** and sentiment.
@@ -28,7 +29,7 @@ MANDATORY RULES - READ CAREFULLY:
    - AVOID reciting heavy stats. Focus on the general "feeling" of the market.
 
 5. **OUTPUT FORMAT:**
-   - Just the raw text of the comment/post. No numbering within the text string itself.
+   - Return structured JSON with 'title' and 'content'. 
 `;
 };
 
@@ -39,9 +40,20 @@ const responseSchema: Schema = {
     results: {
       type: Type.ARRAY,
       items: {
-        type: Type.STRING,
+        type: Type.OBJECT,
+        properties: {
+          title: {
+            type: Type.STRING,
+            description: "The title of the post (max 1 line). Empty string if generating comments.",
+          },
+          content: {
+            type: Type.STRING,
+            description: "The body text of the comment or post.",
+          },
+        },
+        required: ["title", "content"],
       },
-      description: "An array of 5 distinct generated comments or the single post text.",
+      description: "An array of generated items containing title and content.",
     },
   },
   required: ["results"],
@@ -50,10 +62,8 @@ const responseSchema: Schema = {
 export const generateContent = async (
   mode: AppMode,
   inputText: string
-): Promise<string[]> => {
+): Promise<GeneratedItem[]> => {
   // Use process.env.API_KEY directly as per SDK requirements.
-  // Ensure your build tool (like Vite) is configured to expose 'API_KEY' if running in a browser environment,
-  // or simply name your environment variable 'API_KEY' in your deployment settings.
   const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
   let prompt = "";
@@ -67,6 +77,7 @@ export const generateContent = async (
       - CONSTRAINT: Max 1-2 lines per comment. 
       - CRITICAL: Use the $TICKER (e.g. $AAPL) instead of the company name whenever possible.
       - REGION: Global users.
+      - TITLE: Leave the 'title' field empty for all comments.
     `;
   } else {
     prompt = `
@@ -75,8 +86,9 @@ export const generateContent = async (
       TASK: Write a single engaging discussion starter post about this financial topic.
       - VIBE: Polite curiosity, "what do you think?", or a gentle observation.
       - LANGUAGE: Simple, clear English.
-      - CONSTRAINT: Max 3 sentences.
-      - CRITICAL: You MUST include the specific company ticker symbol (e.g. $MSFT) at least once. Company name is optional, but ticker is mandatory.
+      - CONSTRAINT: Max 3 sentences for the content.
+      - CRITICAL: You MUST include the specific company ticker symbol (e.g. $MSFT) at least once.
+      - TITLE: Generate a suitable, short, catchy title (max 1 line) for the post in the 'title' field.
       - REGION: Global perspective.
     `;
   }

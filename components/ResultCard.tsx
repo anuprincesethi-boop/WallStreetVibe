@@ -1,16 +1,22 @@
 import React, { useState } from 'react';
 import { Copy, Check, User, Share2 } from 'lucide-react';
+import { GeneratedItem } from '../types';
 
 interface ResultCardProps {
-  content: string;
+  item: GeneratedItem;
   index: number;
 }
 
-const ResultCard: React.FC<ResultCardProps> = ({ content, index }) => {
+const ResultCard: React.FC<ResultCardProps> = ({ item, index }) => {
   const [copied, setCopied] = useState(false);
 
   const handleCopy = () => {
-    navigator.clipboard.writeText(content);
+    // If there is a title, copy both title and content formatted nicely
+    const textToCopy = item.title && item.title.trim() !== "" 
+      ? `${item.title}\n\n${item.content}` 
+      : item.content;
+
+    navigator.clipboard.writeText(textToCopy);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -28,8 +34,15 @@ const ResultCard: React.FC<ResultCardProps> = ({ content, index }) => {
         </div>
       </div>
 
+      {/* Title Display */}
+      {item.title && item.title.trim() !== "" && (
+        <h3 className="text-fin-accent font-bold font-mono text-lg mb-2 leading-tight">
+          {item.title}
+        </h3>
+      )}
+
       <p className="text-gray-200 font-sans leading-relaxed text-sm md:text-base">
-        {content}
+        {item.content}
       </p>
 
       <div className="mt-4 flex items-center justify-between pt-4 border-t border-gray-800/50">
@@ -54,7 +67,7 @@ const ResultCard: React.FC<ResultCardProps> = ({ content, index }) => {
           ) : (
             <>
               <Copy className="w-3 h-3" />
-              Copy Text
+              Copy
             </>
           )}
         </button>

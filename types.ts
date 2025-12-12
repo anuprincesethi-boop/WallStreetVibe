@@ -3,6 +3,11 @@ export enum AppMode {
   POST_CREATOR = 'POST_CREATOR',
 }
 
+export interface GeneratedItem {
+  title?: string;
+  content: string;
+}
+
 export interface GeneratedContent {
   id: string;
   text: string;

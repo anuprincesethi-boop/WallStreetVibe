@@ -3,14 +3,14 @@ import Header from './components/Header';
 import ModeToggle from './components/ModeToggle';
 import InputSection from './components/InputSection';
 import ResultCard from './components/ResultCard';
-import { AppMode } from './types';
+import { AppMode, GeneratedItem } from './types';
 import { generateContent } from './services/geminiService';
 import { AlertCircle } from 'lucide-react';
 
 const App: React.FC = () => {
   const [mode, setMode] = useState<AppMode>(AppMode.COMMENT_GENERATOR);
   const [loading, setLoading] = useState(false);
-  const [results, setResults] = useState<string[]>([]);
+  const [results, setResults] = useState<GeneratedItem[]>([]);
   const [error, setError] = useState<string | null>(null);
 
   const handleModeChange = (newMode: AppMode) => {
@@ -69,8 +69,8 @@ const App: React.FC = () => {
               </div>
              
               <div className="grid gap-4">
-                {results.map((content, index) => (
-                  <ResultCard key={index} content={content} index={index} />
+                {results.map((item, index) => (
+                  <ResultCard key={index} item={item} index={index} />
                 ))}
               </div>
             </div>
