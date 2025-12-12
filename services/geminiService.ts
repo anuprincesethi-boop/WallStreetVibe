@@ -1,4 +1,4 @@
-import { GoogleGenAI, Type, Schema } from "@google/genai";
+import { GoogleGenAI } from "@google/genai";
 import { AppMode, GeneratedItem } from "../types";
 
 const getSystemInstruction = () => {
@@ -29,42 +29,22 @@ MANDATORY RULES - READ CAREFULLY:
    - AVOID reciting heavy stats. Focus on the general "feeling" of the market.
 
 5. **OUTPUT FORMAT:**
-   - Return structured JSON with 'title' and 'content'. 
+   - Return a raw JSON object.
+   - Structure: { "results": [ { "title": "...", "content": "..." }, ... ] }
 `;
-};
-
-// Schema for structured JSON output
-const responseSchema: Schema = {
-  type: Type.OBJECT,
-  properties: {
-    results: {
-      type: Type.ARRAY,
-      items: {
-        type: Type.OBJECT,
-        properties: {
-          title: {
-            type: Type.STRING,
-            description: "The title of the post (max 1 line). Empty string if generating comments.",
-          },
-          content: {
-            type: Type.STRING,
-            description: "The body text of the comment or post.",
-          },
-        },
-        required: ["title", "content"],
-      },
-      description: "An array of generated items containing title and content.",
-    },
-  },
-  required: ["results"],
 };
 
 export const generateContent = async (
   mode: AppMode,
   inputText: string
 ): Promise<GeneratedItem[]> => {
-  // Use process.env.API_KEY directly as per SDK requirements.
-  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+  // Explicitly check for API key to provide better error messages
+  const apiKey = process.env.API_KEY;
+  if (!apiKey) {
+    throw new Error("API Key is missing. Please check your environment variables or vite.config.ts.");
+  }
+
+  const ai = new GoogleGenAI({ apiKey });
 
   let prompt = "";
   if (mode === AppMode.COMMENT_GENERATOR) {
@@ -77,7 +57,8 @@ export const generateContent = async (
       - CONSTRAINT: Max 1-2 lines per comment. 
       - CRITICAL: Use the $TICKER (e.g. $AAPL) instead of the company name whenever possible.
       - REGION: Global users.
-      - TITLE: Leave the 'title' field empty for all comments.
+      - TITLE: Leave the 'title' field as an empty string "" for all comments.
+      - FORMAT: Return JSON object with a "results" array.
     `;
   } else {
     prompt = `
@@ -90,6 +71,7 @@ export const generateContent = async (
       - CRITICAL: You MUST include the specific company ticker symbol (e.g. $MSFT) at least once.
       - TITLE: Generate a suitable, short, catchy title (max 1 line) for the post in the 'title' field.
       - REGION: Global perspective.
+      - FORMAT: Return JSON object with a "results" array.
     `;
   }
 
@@ -100,8 +82,8 @@ export const generateContent = async (
       config: {
         systemInstruction: getSystemInstruction(),
         responseMimeType: "application/json",
-        responseSchema: responseSchema,
-        temperature: 1.1, 
+        // We rely on the prompt for schema structure to be more robust against validation errors
+        temperature: 0.8, 
       },
     });
 
@@ -110,8 +92,10 @@ export const generateContent = async (
 
     const parsed = JSON.parse(jsonText);
     return parsed.results || [];
-  } catch (error) {
+  } catch (error: any) {
     console.error("Gemini API Error:", error);
-    throw new Error("Failed to generate content. Please check your API key and try again.");
+    // Return the actual error message to help debugging
+    const errorMessage = error.message || "Unknown error occurred";
+    throw new Error(`Failed to generate content: ${errorMessage}`);
   }
 };
