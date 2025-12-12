@@ -87,15 +87,30 @@ export const generateContent = async (
       },
     });
 
-    const jsonText = response.text;
+    let jsonText = response.text;
     if (!jsonText) return [];
+
+    // Clean Markdown code blocks if present (common issue with JSON responses)
+    jsonText = jsonText.replace(/```json/g, "").replace(/```/g, "").trim();
 
     const parsed = JSON.parse(jsonText);
     return parsed.results || [];
   } catch (error: any) {
     console.error("Gemini API Error:", error);
-    // Return the actual error message to help debugging
-    const errorMessage = error.message || "Unknown error occurred";
-    throw new Error(`Failed to generate content: ${errorMessage}`);
+    
+    const errString = error.message || String(error);
+
+    // Specific handling for Rate Limit (429)
+    if (errString.includes("429") || errString.includes("RESOURCE_EXHAUSTED") || errString.includes("quota")) {
+      throw new Error("⚠️ Traffic Limit Reached: You are using the free tier. Please wait ~1 minute before trying again.");
+    }
+    
+    // Specific handling for API Key issues
+    if (errString.includes("API key")) {
+      throw new Error("Invalid API Key. Please check your configuration.");
+    }
+
+    // Generic error fallback (sanitized)
+    throw new Error("Failed to generate content. Please try again in a moment.");
   }
 };
