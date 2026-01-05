@@ -9,28 +9,28 @@ interface ModeToggleProps {
 
 const ModeToggle: React.FC<ModeToggleProps> = ({ currentMode, onModeChange }) => {
   return (
-    <div className="flex p-1 bg-fin-card rounded-xl mb-6 border border-gray-800 w-full md:w-fit">
+    <div className="flex p-1.5 bg-fin-card/80 border border-fin-border rounded-2xl mb-8 w-full md:w-max">
       <button
         onClick={() => onModeChange(AppMode.COMMENT_GENERATOR)}
-        className={`flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-3 rounded-lg text-sm font-medium transition-all duration-200 ${
+        className={`flex-1 md:flex-none flex items-center justify-center gap-2.5 px-8 py-3 rounded-xl text-sm font-semibold transition-all duration-300 ${
           currentMode === AppMode.COMMENT_GENERATOR
-            ? 'bg-fin-accent text-black shadow-lg shadow-fin-accent/20'
-            : 'text-gray-400 hover:text-white hover:bg-white/5'
+            ? 'bg-white text-black shadow-xl'
+            : 'text-gray-500 hover:text-gray-200 hover:bg-white/5'
         }`}
       >
         <MessageSquare className="w-4 h-4" />
-        Comment Generator
+        Comments
       </button>
       <button
         onClick={() => onModeChange(AppMode.POST_CREATOR)}
-        className={`flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-3 rounded-lg text-sm font-medium transition-all duration-200 ${
+        className={`flex-1 md:flex-none flex items-center justify-center gap-2.5 px-8 py-3 rounded-xl text-sm font-semibold transition-all duration-300 ${
           currentMode === AppMode.POST_CREATOR
-            ? 'bg-fin-accent text-black shadow-lg shadow-fin-accent/20'
-            : 'text-gray-400 hover:text-white hover:bg-white/5'
+            ? 'bg-white text-black shadow-xl'
+            : 'text-gray-500 hover:text-gray-200 hover:bg-white/5'
         }`}
       >
         <PenTool className="w-4 h-4" />
-        Post Creator
+        Discussion
       </button>
     </div>
   );

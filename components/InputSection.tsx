@@ -1,14 +1,15 @@
 import React, { useState } from 'react';
 import { AppMode } from '../types';
-import { Send, Loader2 } from 'lucide-react';
+import { Send, Loader2, Sparkles } from 'lucide-react';
 
 interface InputSectionProps {
   mode: AppMode;
   isLoading: boolean;
+  loadingText?: string;
   onSubmit: (input: string) => void;
 }
 
-const InputSection: React.FC<InputSectionProps> = ({ mode, isLoading, onSubmit }) => {
+const InputSection: React.FC<InputSectionProps> = ({ mode, isLoading, loadingText, onSubmit }) => {
   const [text, setText] = useState('');
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -19,61 +20,55 @@ const InputSection: React.FC<InputSectionProps> = ({ mode, isLoading, onSubmit }
   };
 
   const placeholder = mode === AppMode.COMMENT_GENERATOR
-    ? "Paste a financial news headline or tweet..."
-    : "Enter a financial topic to start a discussion...";
-
-  const label = mode === AppMode.COMMENT_GENERATOR
-    ? "Source Content"
-    : "Discussion Topic";
+    ? "Paste a financial news headline, stock tweet, or Reddit post..."
+    : "Describe a topic like '$NVDA earnings' or 'US Inflation data'...";
 
   return (
-    <form onSubmit={handleSubmit} className="w-full">
-      <div className="mb-2 flex justify-between items-end">
-        <label className="text-xs font-semibold uppercase tracking-wider text-gray-500 font-mono">
-          {label}
-        </label>
-        <span className="text-xs text-fin-accent/70 font-mono">
-          {text.length} chars
-        </span>
-      </div>
-      
-      <div className="relative group">
-        <div className="absolute -inset-0.5 bg-gradient-to-r from-fin-accent to-purple-600 rounded-xl opacity-20 group-hover:opacity-40 transition duration-300 blur"></div>
-        <div className="relative w-full bg-fin-card text-gray-200 border border-gray-700 rounded-xl overflow-hidden focus-within:border-fin-accent/50 focus-within:ring-1 focus-within:ring-fin-accent/50 transition-all">
-          <textarea
-            value={text}
-            onChange={(e) => setText(e.target.value)}
-            placeholder={placeholder}
-            className="w-full bg-transparent p-4 min-h-[120px] focus:outline-none resize-y placeholder:text-gray-600 font-mono text-sm"
-          />
+    <form onSubmit={handleSubmit} className="w-full space-y-4">
+      <div className="flex justify-between items-end px-1">
+        <div className="flex items-center gap-2 text-[11px] font-bold text-gray-500 uppercase tracking-[0.1em]">
+          <Sparkles className="w-3 h-3 text-fin-accent" />
+          {mode === AppMode.COMMENT_GENERATOR ? 'Analysis Source' : 'Topic Brief'}
+        </div>
+        <div className="text-[10px] font-mono text-gray-600 bg-gray-900 px-2 py-0.5 rounded border border-gray-800">
+          {text.length} / 2000
         </div>
       </div>
+      
+      <div className="relative">
+        <textarea
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+          placeholder={placeholder}
+          className="w-full bg-black/40 text-gray-100 border border-fin-border rounded-2xl p-5 min-h-[160px] focus:outline-none focus:border-fin-accent/50 focus:ring-1 focus:ring-fin-accent/20 transition-all placeholder:text-gray-700 font-sans text-base leading-relaxed resize-none shadow-inner"
+        />
+      </div>
 
-      <div className="mt-4 flex flex-wrap items-center justify-between gap-4">
-        <div className="flex items-center gap-4">
+      <div className="flex flex-col md:flex-row items-center justify-between gap-6 pt-2">
+        <div className="flex flex-wrap gap-2">
           <button
             type="button"
-            onClick={() => setText(mode === AppMode.COMMENT_GENERATOR ? 'Microsoft just announced a new AI partnership with OpenAI worth billions.' : 'Impact of AI on software engineering jobs')}
-            className="text-xs text-gray-500 hover:text-fin-accent transition-colors underline decoration-dotted"
+            onClick={() => setText(mode === AppMode.COMMENT_GENERATOR ? '$TSLA just hit a new 52-week high after better than expected delivery numbers.' : 'Is it time to rotation from Big Tech into Small Caps?')}
+            className="text-[11px] font-semibold text-gray-500 hover:text-fin-accent transition-colors bg-gray-900/50 hover:bg-fin-accent/5 border border-gray-800 px-3 py-1.5 rounded-lg"
           >
-            Try Example
+            Load Sample Data
           </button>
         </div>
 
         <button
           type="submit"
           disabled={isLoading || !text.trim()}
-          className="flex items-center gap-2 bg-white text-black px-6 py-2.5 rounded-lg font-semibold hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-95 ml-auto"
+          className="w-full md:w-auto flex items-center justify-center gap-2.5 bg-fin-accent text-black px-10 py-3.5 rounded-xl font-bold hover:scale-[1.02] hover:shadow-[0_0_20px_rgba(0,229,255,0.3)] disabled:opacity-30 disabled:hover:scale-100 disabled:cursor-not-allowed transition-all active:scale-95"
         >
           {isLoading ? (
             <>
-              <Loader2 className="w-4 h-4 animate-spin" />
-              Generating...
+              <Loader2 className="w-5 h-5 animate-spin" />
+              <span className="font-mono text-sm tracking-tight">{loadingText || "Processing..."}</span>
             </>
           ) : (
             <>
               <Send className="w-4 h-4" />
-              Generate
+              Generate Sentiment
             </>
           )}
         </button>
